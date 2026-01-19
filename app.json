@@ -1,12 +1,32 @@
 {
-  "name": "onub2b-mobile",
-  "displayName": "onub2b",
-  "version": "1.0.0",
-  "description": "Production-ready mobile app with Firebase FCM, Bluetooth BLE, and GPS location services",
-  "main": "index.js",
-  "scripts": {
-    "android": "react-native run-android",
-    "ios": "react-native run-ios",
-    "typecheck": "tsc --noEmit"
+  "expo": {
+    "name": "onub2b-mobile",
+    "slug": "onub2b-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "onub2b",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.onub2b.mobile"
+    },
+    "android": {
+      "package": "com.onub2b.mobile",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": ["expo-router", "expo-font"],
+    "experiments": {
+      "typedRoutes": true
+    }
   }
 }
