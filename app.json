@@ -1,0 +1,12 @@
+{
+  "name": "onub2b-mobile",
+  "displayName": "onub2b",
+  "version": "1.0.0",
+  "description": "Production-ready mobile app with Firebase FCM, Bluetooth BLE, and GPS location services",
+  "main": "index.js",
+  "scripts": {
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "typecheck": "tsc --noEmit"
+  }
+}
