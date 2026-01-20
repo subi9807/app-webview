@@ -9,6 +9,7 @@ Expo Dev Client 기반 모바일 앱으로 Firebase FCM, Bluetooth BLE, GPS 위�
 ✅ **Bluetooth Low Energy** - BLE 디바이스 스캔 및 연결
 ✅ **GPS 위치 서비스** - 실시간 위치 추적
 ✅ **WebView ↔ Native 브리지** - 양방향 통신
+✅ **다크모드 지원** - 시스템 설정에 따라 자동 전환
 
 ## 📦 설치 및 설정
 

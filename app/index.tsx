@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, StyleSheet, ActivityIndicator, Platform, Text, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ActivityIndicator, Platform, Text, TouchableOpacity, useColorScheme } from 'react-native';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { StatusBar } from 'expo-status-bar';
 import { WebViewBridge } from '../services/WebViewBridge';
@@ -106,6 +106,8 @@ export default function HomeScreen() {
   const webViewRef = useRef<WebView>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
 
   useEffect(() => {
     initializeServices();
@@ -157,13 +159,22 @@ export default function HomeScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="auto" />
-
+    <View style={[styles.container, { backgroundColor: isDark ? '#000000' : '#ffffff' }]}>
       {error && (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
+        <View style={[
+          styles.errorContainer,
+          {
+            backgroundColor: isDark ? '#3d1f1f' : '#ffebee',
+            borderBottomColor: isDark ? '#d32f2f' : '#ef5350',
+          }
+        ]}>
+          <Text style={[styles.errorText, { color: isDark ? '#ffcdd2' : '#c62828' }]}>
+            {error}
+          </Text>
+          <TouchableOpacity
+            style={[styles.retryButton, { backgroundColor: isDark ? '#d32f2f' : '#ef5350' }]}
+            onPress={handleRetry}
+          >
             <Text style={styles.retryButtonText}>Retry</Text>
           </TouchableOpacity>
         </View>
@@ -172,7 +183,13 @@ export default function HomeScreen() {
       <WebView
         ref={webViewRef}
         source={{ uri: WEBVIEW_URL }}
-        style={[styles.webView, { opacity: error ? 0.3 : 1 }]}
+        style={[
+          styles.webView,
+          {
+            opacity: error ? 0.3 : 1,
+            backgroundColor: isDark ? '#000000' : '#ffffff',
+          }
+        ]}
         onMessage={handleMessage}
         onLoadStart={handleLoadStart}
         onLoadEnd={handleLoadEnd}
@@ -205,9 +222,14 @@ export default function HomeScreen() {
       />
 
       {isLoading && !error && (
-        <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color="#007AFF" />
-          <Text style={styles.loadingText}>Loading...</Text>
+        <View style={[
+          styles.loadingOverlay,
+          { backgroundColor: isDark ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.9)' }
+        ]}>
+          <ActivityIndicator size="large" color={isDark ? '#ffffff' : '#007AFF'} />
+          <Text style={[styles.loadingText, { color: isDark ? '#ffffff' : '#666666' }]}>
+            Loading...
+          </Text>
         </View>
       )}
     </View>
@@ -217,7 +239,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   webView: {
     flex: 1,
@@ -230,27 +251,21 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
   },
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#666',
   },
   errorContainer: {
     padding: 16,
-    backgroundColor: '#ffebee',
     borderBottomWidth: 1,
-    borderBottomColor: '#ef5350',
     zIndex: 10,
   },
   errorText: {
     fontSize: 14,
-    color: '#c62828',
     marginBottom: 12,
   },
   retryButton: {
-    backgroundColor: '#ef5350',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 6,
