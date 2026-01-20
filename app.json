@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.onub2b.mobile",
+      "bundleIdentifier": "com.onu.onub2b",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "This app needs your location to provide location-based services.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs your location to provide location-based services even when the app is in the background.",
@@ -20,7 +20,7 @@
       }
     },
     "android": {
-      "package": "com.onub2b.mobile",
+      "package": "com.onu.onub2b",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#ffffff"
