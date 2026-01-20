@@ -10,21 +10,92 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.onub2b.mobile"
+      "bundleIdentifier": "com.onub2b.mobile",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app needs your location to provide location-based services.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs your location to provide location-based services even when the app is in the background.",
+        "NSBluetoothAlwaysUsageDescription": "This app uses Bluetooth to communicate with nearby devices.",
+        "NSBluetoothPeripheralUsageDescription": "This app uses Bluetooth to communicate with nearby devices.",
+        "UIBackgroundModes": ["location", "remote-notification", "bluetooth-central"]
+      }
     },
     "android": {
       "package": "com.onub2b.mobile",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "BLUETOOTH",
+        "BLUETOOTH_ADMIN",
+        "BLUETOOTH_SCAN",
+        "BLUETOOTH_CONNECT",
+        "POST_NOTIFICATIONS"
+      ],
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",
       "output": "single",
       "favicon": "./assets/images/favicon.png"
     },
-    "plugins": ["expo-router", "expo-font"],
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-dev-client",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow onub2b to use your location.",
+          "locationAlwaysPermission": "Allow onub2b to use your location even when the app is in the background.",
+          "locationWhenInUsePermission": "Allow onub2b to use your location while using the app.",
+          "isAndroidBackgroundLocationEnabled": true,
+          "isIosBackgroundLocationEnabled": true
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#ffffff",
+          "sounds": []
+        }
+      ],
+      [
+        "@react-native-firebase/app",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ],
+      "@react-native-firebase/messaging",
+      [
+        "react-native-ble-plx",
+        {
+          "isBackgroundEnabled": true,
+          "modes": ["peripheral", "central"],
+          "bluetoothAlwaysPermission": "Allow onub2b to connect to Bluetooth devices."
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          },
+          "android": {
+            "minSdkVersion": 23,
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "buildToolsVersion": "34.0.0"
+          }
+        }
+      ]
+    ],
     "experiments": {
       "typedRoutes": true
     }

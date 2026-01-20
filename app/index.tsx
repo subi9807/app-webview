@@ -1,14 +1,140 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { View, StyleSheet, ActivityIndicator, Platform, Text, TouchableOpacity } from 'react-native';
-import { WebView } from 'react-native-webview';
+import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { StatusBar } from 'expo-status-bar';
+import { WebViewBridge } from '../services/WebViewBridge';
+import { FirebaseService } from '../services/FirebaseService';
+import { LocationService } from '../services/LocationService';
+import { BLEService } from '../services/BLEService';
 
 const WEBVIEW_URL = 'https://onub2b.com';
+
+const BRIDGE_SCRIPT = `
+(function() {
+  const callbacks = new Map();
+  let messageId = 0;
+
+  function generateId() {
+    return \`msg_\${Date.now()}_\${++messageId}\`;
+  }
+
+  function sendMessage(method, params) {
+    return new Promise((resolve, reject) => {
+      const id = generateId();
+      const timeout = setTimeout(() => {
+        callbacks.delete(id);
+        reject(new Error(\`Timeout for method: \${method}\`));
+      }, 30000);
+
+      callbacks.set(id, (response) => {
+        clearTimeout(timeout);
+        callbacks.delete(id);
+        if (response.success) {
+          resolve(response.result);
+        } else {
+          reject(new Error(response.error || 'Unknown error'));
+        }
+      });
+
+      const message = { id, method, params };
+      window.ReactNativeWebView.postMessage(JSON.stringify(message));
+    });
+  }
+
+  window.__nativebridge = {
+    handleNativeResponse(response) {
+      const callback = callbacks.get(response.id);
+      if (callback) callback(response);
+    },
+
+    handleLocationUpdate(location) {
+      if (window.__onLocationUpdate) window.__onLocationUpdate(location);
+      window.dispatchEvent(new CustomEvent('nativeLocationUpdate', { detail: location }));
+    },
+
+    handleBLEDeviceFound(device) {
+      if (window.__onBLEDeviceFound) window.__onBLEDeviceFound(device);
+      window.dispatchEvent(new CustomEvent('nativeBLEDeviceFound', { detail: device }));
+    },
+
+    handleBLEDataReceived(data) {
+      if (window.__onBLEDataReceived) window.__onBLEDataReceived(data);
+      window.dispatchEvent(new CustomEvent('nativeBLEDataReceived', { detail: data }));
+    },
+
+    getFCMToken: () => sendMessage('getFCMToken', {}),
+    getCurrentLocation: () => sendMessage('getCurrentLocation', {}),
+    startLocationTracking: (callback) => {
+      if (callback) window.__onLocationUpdate = callback;
+      return sendMessage('startLocationTracking', {});
+    },
+    stopLocationTracking: () => {
+      window.__onLocationUpdate = null;
+      return sendMessage('stopLocationTracking', {});
+    },
+    requestLocationPermission: () => sendMessage('requestLocationPermission', {}),
+    startBLEScan: (serviceUUIDs, callback) => {
+      if (callback) window.__onBLEDeviceFound = callback;
+      return sendMessage('startBLEScan', { serviceUUIDs });
+    },
+    stopBLEScan: () => {
+      window.__onBLEDeviceFound = null;
+      return sendMessage('stopBLEScan', {});
+    },
+    connectBLEDevice: (deviceId, dataCallback) => {
+      if (dataCallback) window.__onBLEDataReceived = dataCallback;
+      return sendMessage('connectBLEDevice', { deviceId });
+    },
+    disconnectBLEDevice: (deviceId) => {
+      window.__onBLEDataReceived = null;
+      return sendMessage('disconnectBLEDevice', { deviceId });
+    },
+    sendBLEData: (deviceId, serviceUUID, characteristicUUID, data) =>
+      sendMessage('sendBLEData', { deviceId, serviceUUID, characteristicUUID, data }),
+    requestBluetoothPermission: () => sendMessage('requestBluetoothPermission', {}),
+    isReady: () => true,
+  };
+
+  window.__nativeBridgeReady = true;
+  console.log('Native bridge initialized');
+  window.dispatchEvent(new Event('nativeBridgeReady'));
+})();
+true;
+`;
 
 export default function HomeScreen() {
   const webViewRef = useRef<WebView>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    initializeServices();
+    WebViewBridge.setWebViewRef(webViewRef);
+
+    return () => {
+      WebViewBridge.cleanup();
+      LocationService.cleanup();
+      BLEService.cleanup();
+      FirebaseService.cleanup();
+    };
+  }, []);
+
+  const initializeServices = async () => {
+    try {
+      await FirebaseService.initialize();
+      console.log('All services initialized');
+    } catch (error) {
+      console.error('Service initialization error:', error);
+    }
+  };
+
+  const handleMessage = async (event: WebViewMessageEvent) => {
+    try {
+      await WebViewBridge.handleMessage(event.nativeEvent.data);
+    } catch (error) {
+      console.error('Handle message error:', error);
+    }
+  };
 
   const handleLoadStart = () => {
     setIsLoading(true);
@@ -47,6 +173,7 @@ export default function HomeScreen() {
         ref={webViewRef}
         source={{ uri: WEBVIEW_URL }}
         style={[styles.webView, { opacity: error ? 0.3 : 1 }]}
+        onMessage={handleMessage}
         onLoadStart={handleLoadStart}
         onLoadEnd={handleLoadEnd}
         onError={handleError}
@@ -62,6 +189,7 @@ export default function HomeScreen() {
         scalesPageToFit={true}
         scrollEnabled={true}
         sharedCookiesEnabled={true}
+        injectedJavaScript={BRIDGE_SCRIPT}
         onShouldStartLoadWithRequest={(request) => {
           const url = request.url;
           return (
