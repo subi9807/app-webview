@@ -7,7 +7,7 @@ import { FirebaseService } from '../services/FirebaseService';
 import { LocationService } from '../services/LocationService';
 import { BLEService } from '../services/BLEService';
 
-const WEBVIEW_URL = 'https://onub2b.com';
+const WEBVIEW_URL = 'https://onub2b.com/login';
 
 const BRIDGE_SCRIPT = `
 (function() {

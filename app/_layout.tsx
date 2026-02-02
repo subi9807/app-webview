@@ -1,31 +1,26 @@
-import { useEffect } from 'react';
 import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
+import { View } from 'react-native';
 import { useColorScheme } from 'react-native';
-import * as SystemUI from 'expo-system-ui';
+import { StatusBar } from 'expo-status-bar';
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-
-  useEffect(() => {
-    const backgroundColor = colorScheme === 'dark' ? '#000000' : '#ffffff';
-    SystemUI.setBackgroundColorAsync(backgroundColor);
-  }, [colorScheme]);
+  const isDark = useColorScheme() === 'dark';
 
   return (
     <>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       <Stack
         screenOptions={{
-          headerShown: false,
-          contentStyle: {
-            backgroundColor: colorScheme === 'dark' ? '#000000' : '#ffffff',
-          },
+          header: () => (
+            <View
+              style={{
+                height: 60,
+                backgroundColor: isDark ? '#000' : '#fff',
+              }}
+            />
+          ),
         }}
-      >
-        <Stack.Screen name="index" />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+      />
     </>
   );
 }
